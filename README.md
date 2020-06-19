@@ -1,8 +1,8 @@
 # SimpleWorkFlowAnno
 注解版的简易工作流引擎。
 
-#### Show Me Your Code
-```
+#### Show Me Your Code：
+```java
 /**
  * 下单工作流
  */
@@ -31,7 +31,7 @@ public class PlaceAnOrderFlow {
     void lockInventoryProcessor(WorkFlowContext workFlowContext) throws BusinessException {
         logger.info("LockInventoryProcessor processing...");
         workFlowContext.setNextNodeName("decreaseInventoryProcessor");
-//        workFlowContext.setNextNodeName("failProcessor");
+        //workFlowContext.setNextNodeName("failProcessor");
     }
 
     /**
@@ -90,7 +90,7 @@ public class Application {
 }
 ```
 
-#### 运行效果
+#### 代码运行效果:
 ```
 2020-06-19 23:19:12.659  INFO 11520 --- [           main] com.lnwazg.workflow.Application          : Starting Application on PC-20160723SEYR with PID 11520 (D:\Documents\GitHub\SimpleWorkFlowAnno\out\production\classes started by Administrator in D:\Documents\GitHub\SimpleWorkFlowAnno)
 2020-06-19 23:19:12.661  INFO 11520 --- [           main] com.lnwazg.workflow.Application          : No active profile set, falling back to default profiles: default
