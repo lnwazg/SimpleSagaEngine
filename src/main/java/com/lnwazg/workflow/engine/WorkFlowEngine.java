@@ -52,10 +52,13 @@ public class WorkFlowEngine {
         }
         logger.info("起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNodeMap.keySet());
         try {
-            startNodeMethod.invoke(workFlow, workFlowContext);
+            //若未指定第一个节点的名称，则默认从首节点开始执行
+            if (StringUtils.isEmpty(workFlowContext.getNextNodeName())) {
+                startNodeMethod.invoke(workFlow, workFlowContext);
+            }
             String nextNodeName = null;
             Method nextMethod = null;
-            //一直执行完所有的流程
+            //一直执行，直到执行完所有的流程
             while (!StringUtils.isEmpty(nextNodeName = workFlowContext.getNextNodeName())) {
                 nextMethod = flowNodeMap.get(nextNodeName);
                 if (nextMethod != null) {
