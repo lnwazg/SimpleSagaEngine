@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -51,7 +50,7 @@ public class WorkFlowEngine {
                 flowNodeMap.put(m.getName(), m);
             }
         }
-        logger.info("起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNodeMap.keySet());
+        logger.info("流程【" + workFlowName + "】开始运行。起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNodeMap.keySet());
         try {
             //若未指定第一个节点的名称，则默认从首节点开始执行
             if (StringUtils.isEmpty(workFlowContext.getNextNodeName())) {
@@ -67,10 +66,15 @@ public class WorkFlowEngine {
                     workFlowContext.setNextNodeName(null);
                     logger.info("开始执行节点【" + nextMethod.getName() + "】");
                     nextMethod.invoke(workFlow, workFlowContext);
+                } else {
+                    //指定了下个节点名称，但实际节点不存在，则直接结束整个流程。
+                    break;
                 }
             }
         } catch (Exception e) {
             logger.error(workFlowName + "执行工作流出现异常", e);
+        } finally {
+            logger.info("流程【" + workFlowName + "】运行完毕。");
         }
     }
 }
