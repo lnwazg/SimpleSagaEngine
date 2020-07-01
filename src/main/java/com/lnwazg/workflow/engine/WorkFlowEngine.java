@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -41,7 +42,7 @@ public class WorkFlowEngine {
         //起始节点
         Method startNodeMethod = null;
         //节点表
-        Map<String, Method> flowNodeMap = new HashMap<>();
+        Map<String, Method> flowNodeMap = new LinkedHashMap<>();
         for (Method m : declaredMethods) {
             m.setAccessible(true);
             if (m.isAnnotationPresent(StartNode.class)) {
@@ -54,6 +55,7 @@ public class WorkFlowEngine {
         try {
             //若未指定第一个节点的名称，则默认从首节点开始执行
             if (StringUtils.isEmpty(workFlowContext.getNextNodeName())) {
+                logger.info("开始执行节点【" + startNodeMethod.getName() + "】");
                 startNodeMethod.invoke(workFlow, workFlowContext);
             }
             String nextNodeName = null;
@@ -63,6 +65,7 @@ public class WorkFlowEngine {
                 nextMethod = flowNodeMap.get(nextNodeName);
                 if (nextMethod != null) {
                     workFlowContext.setNextNodeName(null);
+                    logger.info("开始执行节点【" + nextMethod.getName() + "】");
                     nextMethod.invoke(workFlow, workFlowContext);
                 }
             }
