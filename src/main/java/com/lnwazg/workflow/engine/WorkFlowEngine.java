@@ -1,8 +1,8 @@
 package com.lnwazg.workflow.engine;
 
-import com.lnwazg.workflow.anno.Node;
-import com.lnwazg.workflow.anno.StartNode;
-import com.lnwazg.workflow.anno.WorkFlow;
+import com.lnwazg.workflow.engine.anno.Node;
+import com.lnwazg.workflow.engine.anno.StartNode;
+import com.lnwazg.workflow.engine.anno.WorkFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class WorkFlowEngine {
      * @param workFlowName
      * @param workFlowContext
      */
-    public void runWorkFlow(String workFlowName, WorkFlowContext workFlowContext) {
+    public void runWorkFlow(String workFlowName, BaseWorkFlowContext workFlowContext) {
         //获取引擎实例
         Object workFlow = applicationContext.getBean(workFlowName);
         Class<?> workFlowClazz = workFlow.getClass();

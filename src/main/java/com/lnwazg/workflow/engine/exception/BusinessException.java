@@ -1,4 +1,4 @@
-package com.lnwazg.workflow.engine;
+package com.lnwazg.workflow.engine.exception;
 
 /**
  * 业务异常
