@@ -1,19 +1,14 @@
 package com.lnwazg.workflow.engine;
 
+import lombok.Data;
+
 /**
  * 工作流上下文
  */
+@Data
 public class WorkFlowContext {
     /**
      * 下一个处理节点的名称
      */
     private String nextNodeName;
-
-    public String getNextNodeName() {
-        return nextNodeName;
-    }
-
-    public void setNextNodeName(String nextNodeName) {
-        this.nextNodeName = nextNodeName;
-    }
 }

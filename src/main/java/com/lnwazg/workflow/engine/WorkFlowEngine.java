@@ -54,9 +54,15 @@ public class WorkFlowEngine {
         try {
             //若未指定第一个节点的名称，则默认从首节点开始执行
             if (StringUtils.isEmpty(workFlowContext.getNextNodeName())) {
+                //默认执行首节点
+                workFlowContext.setNextNodeName(startNodeMethod.getName());
                 logger.info("开始执行节点【" + startNodeMethod.getName() + "】");
+                //先清空下节点数据
+                workFlowContext.setNextNodeName(null);
+                //然后执行（执行完毕后，若该节点认为还需要执行下一个流程，则其内部会进行指定）
                 startNodeMethod.invoke(workFlow, workFlowContext);
             }
+
             String nextNodeName = null;
             Method nextMethod = null;
             //一直执行，直到执行完所有的流程

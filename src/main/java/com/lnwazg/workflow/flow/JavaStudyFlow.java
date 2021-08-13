@@ -5,6 +5,7 @@ import com.lnwazg.workflow.anno.StartNode;
 import com.lnwazg.workflow.anno.WorkFlow;
 import com.lnwazg.workflow.engine.BusinessException;
 import com.lnwazg.workflow.engine.WorkFlowContext;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -41,15 +42,11 @@ public class JavaStudyFlow {
     void end(MyContext workFlowContext) throws BusinessException {
     }
 
+    /**
+     * 自定义工作流上下文，可扩展
+     */
+    @Data
     public static class MyContext extends WorkFlowContext {
-        public int getReadTimes() {
-            return readTimes;
-        }
-
-        public void setReadTimes(int readTimes) {
-            this.readTimes = readTimes;
-        }
-
         private int readTimes;
     }
 }
