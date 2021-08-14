@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * 可执行的流程
- *
  * @param <T>
  */
 public abstract class AbstractFlow<T extends BaseWorkFlowContext> implements ApplicationContextAware {

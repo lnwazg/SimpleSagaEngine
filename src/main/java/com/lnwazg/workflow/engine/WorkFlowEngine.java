@@ -91,7 +91,7 @@ public class WorkFlowEngine {
                 }
             }
         } catch (Exception e) {
-            logger.error(workFlowName + "流程执行出现异常！", e);
+            logger.error("流程【" + workFlowName + "】执行节点【" + nextMethod.getName() + "】 出现异常！", e);
             //若走到某一步执行失败了，则要依次执行每一个已执行完的流程的回滚流程（若存在rollback流程）
             logger.info("即将执行的回滚节点列表：" + rollbackNames.toString());
             if (!CollectionUtils.isEmpty(rollbackNames)) {
