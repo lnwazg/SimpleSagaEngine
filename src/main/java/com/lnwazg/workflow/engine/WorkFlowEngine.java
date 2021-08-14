@@ -114,7 +114,6 @@ public class WorkFlowEngine {
             }
         } finally {
             gw.stop();
-
             logger.info("流程【" + workFlowName + "】运行完毕，总计耗时：" + gw.getTotalTimeMillis() + "ms");
         }
     }
