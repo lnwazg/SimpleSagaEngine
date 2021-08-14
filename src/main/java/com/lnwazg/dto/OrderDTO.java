@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 public class OrderDTO {
     private Long orderId;
     private Long saleAccountId;
+    //10初始化 20待支付 30已支付
+    private Integer orderStatus;
     private BigDecimal payAmount;
     private LocalDateTime createdTime;
     private LocalDateTime lastModifiedTime;
+
 }

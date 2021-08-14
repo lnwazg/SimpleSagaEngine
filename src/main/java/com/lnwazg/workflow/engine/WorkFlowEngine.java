@@ -58,8 +58,9 @@ public class WorkFlowEngine {
             logger.error("流程【" + workFlowName + "】未设置起始节点，忽略执行！");
             return;
         }
+        StopWatch gw = new StopWatch();
+        gw.start();
         logger.info("流程【" + workFlowName + "】开始运行。起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNameNodeMap.keySet());
-
         String nextNodeName = null;
         Method nextMethod = null;
         //将起始节点加入
@@ -83,8 +84,7 @@ public class WorkFlowEngine {
                     stopWatch.start();
                     nextMethod.invoke(workFlow, workFlowContext);
                     stopWatch.stop();
-                    long totalTimeMillis = stopWatch.getTotalTimeMillis();
-                    logger.info("结束执行节点【" + nextMethod.getName() + "】，耗时：" + totalTimeMillis + "ms");
+                    logger.info("结束执行节点【" + nextMethod.getName() + "】，耗时：" + stopWatch.getTotalTimeMillis() + "ms");
                 } else {
                     //指定了下个节点名称，但实际节点不存在，则直接结束整个流程。
                     break;
@@ -93,11 +93,13 @@ public class WorkFlowEngine {
         } catch (Exception e) {
             logger.error("流程【" + workFlowName + "】执行节点【" + nextMethod.getName() + "】 出现异常！", e);
             //若走到某一步执行失败了，则要依次执行每一个已执行完的流程的回滚流程（若存在rollback流程）
+            //将列表倒序。因为回滚时要从后往前回滚。
+            Collections.reverse(rollbackNames);
             logger.info("即将执行的回滚节点列表：" + rollbackNames.toString());
             if (!CollectionUtils.isEmpty(rollbackNames)) {
                 //开始回滚
                 rollbackNames.stream().forEach(x -> {
-                    logger.info("begin to rollback: " + x);
+                    logger.info("开始执行回滚节点【" + x + "】");
                     Method method = flowNameRollbackNodeMap.get(x);
                     try {
                         method.invoke(workFlow, workFlowContext);
@@ -105,11 +107,15 @@ public class WorkFlowEngine {
                         illegalAccessException.printStackTrace();
                     } catch (InvocationTargetException invocationTargetException) {
                         invocationTargetException.printStackTrace();
+                    } finally {
+                        logger.info("结束执行回滚节点【" + x + "】");
                     }
                 });
             }
         } finally {
-            logger.info("流程【" + workFlowName + "】运行完毕。");
+            gw.stop();
+
+            logger.info("流程【" + workFlowName + "】运行完毕，总计耗时：" + gw.getTotalTimeMillis() + "ms");
         }
     }
 }
