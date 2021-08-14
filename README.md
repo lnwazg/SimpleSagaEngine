@@ -4,115 +4,99 @@
 #### Show Me Your Code：
 ```java
 /**
- * 下单工作流
+ * 订单提交
  */
 @WorkFlow
 @Component
-public class PlaceAnOrderFlow {
-    private Logger logger = LoggerFactory.getLogger(PlaceAnOrderFlow.class);
+public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
+  private Logger logger = LoggerFactory.getLogger(OrderCommitFlow.class);
 
-    /**
-     * 起始节点
-     *
-     * @param workFlowContext
-     */
-    @StartNode
-    @Node
-    void start(WorkFlowContext workFlowContext) throws BusinessException {
-        workFlowContext.setNextNodeName("lockInventoryProcessor");
-    }
+  private final OrderService orderService;
 
-    /**
-     * 锁库存
-     *
-     * @param workFlowContext
-     */
-    @Node
-    void lockInventoryProcessor(WorkFlowContext workFlowContext) throws BusinessException {
-        logger.info("LockInventoryProcessor processing...");
-        workFlowContext.setNextNodeName("decreaseInventoryProcessor");
-        //workFlowContext.setNextNodeName("failProcessor");
-    }
+  public OrderCommitFlow(OrderService orderService) {
+    this.orderService = orderService;
+  }
 
-    /**
-     * 减库存
-     *
-     * @param workFlowContext
-     */
-    @Node
-    void decreaseInventoryProcessor(WorkFlowContext workFlowContext) throws BusinessException {
-        logger.info("decreaseInventoryProcessor processing...");
-        workFlowContext.setNextNodeName("createOrderProcessor");
-    }
+  //下单流程：
+  //查询商品信息
+  //查询用户信息
+  //算费
+  //创建分布式Id
+  //保存订单信息
+  //锁库存
+  //扣积分
+  //增加活动次数
+  //扣减会员权益
+  //锁定优惠券
 
-    /**
-     * 创建订单
-     *
-     * @param workFlowContext
-     */
-    @Node
-    void createOrderProcessor(WorkFlowContext workFlowContext) throws BusinessException {
-        logger.info("createOrderProcessor processing...");
-        workFlowContext.setNextNodeName("releaselockInventoryProcessor");
-    }
+  //修改订单状态
+  //发送履约消息
+  
+  @StartNode
+  void createOrder(OrderFlowContext orderFlowContext) throws BusinessException {
+    OrderDTO orderDTO = orderService.createOrder();
+    orderFlowContext.setOrderDTO(orderDTO);
+    orderFlowContext.setNextNodeName("lockInventory");
+  }
 
-    /**
-     * 释放库存锁
-     *
-     * @param workFlowContext
-     */
-    @Node
-    void releaselockInventoryProcessor(WorkFlowContext workFlowContext) throws BusinessException {
-        logger.info("releaselockInventoryProcessor processing...");
-    }
+  @Node(rollbackNode = "lockInventoryRollback")
+  void lockInventory(OrderFlowContext orderFlowContext) throws BusinessException {
+    logger.info("begin to lockInventory...");
+    logger.info("end to lockInventory");
+    throw new RuntimeException("xxxx");
+  }
 
-    /**
-     * 失败处理
-     *
-     * @param workFlowContext
-     */
-    @Node
-    void failProcessor(WorkFlowContext workFlowContext) throws BusinessException {
-        logger.info("failProcessor...");
-    }
-
+  @RollbackNode
+  void lockInventoryRollback(OrderFlowContext orderFlowContext) throws BusinessException {
+    logger.info("begin to lockInventoryRollback...");
+    logger.info("end to lockInventoryRollback");
+  }
 }
 
-@SpringBootApplication
-public class Application {
-    public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-        //获取引擎实例
-        WorkFlowEngine workFlowEngine = (WorkFlowEngine) context.getBean("workFlowEngine");
-        //执行引擎
-        workFlowEngine.runWorkFlow("placeAnOrderFlow", new WorkFlowContext());
-    }
-}
 ```
 
 #### 代码运行效果:
 ```
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【placeAnOrderFlow】开始运行。起始节点：start，后续可选节点：[createOrderProcessor, lockInventoryProcessor, decreaseInventoryProcessor, releaselockInventoryProcessor, failProcessor]
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【start】
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【lockInventoryProcessor】
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.flow.PlaceAnOrderFlow  : LockInventoryProcessor processing...
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【decreaseInventoryProcessor】
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.flow.PlaceAnOrderFlow  : decreaseInventoryProcessor processing...
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【createOrderProcessor】
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.flow.PlaceAnOrderFlow  : createOrderProcessor processing...
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【releaselockInventoryProcessor】
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.flow.PlaceAnOrderFlow  : releaselockInventoryProcessor processing...
-2020-07-01 11:16:10.821  INFO 2504 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【placeAnOrderFlow】运行完毕。
+2021-08-14 12:35:10.792  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCommitFlow】开始运行。起始节点：createOrder，后续可选节点：[lockInventory]
+2021-08-14 12:35:10.792  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【createOrder】
+2021-08-14 12:35:10.797  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【createOrder】，耗时：4ms
+2021-08-14 12:35:10.797  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【lockInventory】
+2021-08-14 12:35:10.797  INFO 12008 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : begin to lockInventory...
+2021-08-14 12:35:10.797  INFO 12008 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : end to lockInventory
+2021-08-14 12:35:10.801 ERROR 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : orderCommitFlow执行工作流出现异常
+
+java.lang.reflect.InvocationTargetException: null
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_60]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_60]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_60]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[na:1.8.0_60]
+	at com.lnwazg.workflow.engine.WorkFlowEngine.runWorkFlow(WorkFlowEngine.java:84) ~[classes/:na]
+	at com.lnwazg.workflow.engine.AbstractFlow.exec(AbstractFlow.java:23) [classes/:na]
+	at com.lnwazg.workflow.flow.OrderController.runOrder(OrderController.java:28) [classes/:na]
+	at com.lnwazg.workflow.Application.main(Application.java:16) [classes/:na]
+Caused by: java.lang.RuntimeException: xxxx
+	at com.lnwazg.workflow.flow.order.OrderCommitFlow.lockInventory(OrderCommitFlow.java:55) ~[classes/:na]
+	... 8 common frames omitted
+
+2021-08-14 12:35:10.801  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 即将执行的回滚节点列表：[lockInventoryRollback]
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : begin to rollback: lockInventoryRollback
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : begin to lockInventoryRollback...
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : end to lockInventoryRollback
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCommitFlow】运行完毕。
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderPayFlow】开始运行。起始节点：start，后续可选节点：[]
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【start】
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【start】，耗时：0ms
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderPayFlow】运行完毕。
+2021-08-14 12:35:10.802  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderFulfillingFlow】开始运行。起始节点：start，后续可选节点：[]
+2021-08-14 12:35:10.803  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【start】
+2021-08-14 12:35:10.803  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【start】，耗时：0ms
+2021-08-14 12:35:10.803  INFO 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderFulfillingFlow】运行完毕。
+2021-08-14 12:35:10.803 ERROR 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCancelFlow】未设置起始节点，忽略执行！
 ```
 
 #### 框架功能：
-- 支持流程内部任意节点（方法名）之间的跳转。
-- 若某个节点的代码逻辑未指定下个节点，则该节点为最后一个节点。
-- 可手动指定流程的起始节点名称。若不指定，则默认以@StartNode标注的方法作为起始节点。
-- （可选）流程意外中断后继续运行的方案：  
-  在数据库表增加一个flowNode字段，初始状态该字段为空。    
-  执行流程前，将flowNode字段设置到WorkFlowContext的nextNodeName。   
-  每执行一个节点，在节点起始代码位置将节点名称更新到flowNode字段。  
-  若流程意外中断，则数据库的flowNode字段内容停留在上一个未执行完毕的节点位置，那么重新开始流程即可继续执行。  
-  流程重复执行的正确性需要每个流程的代码逻辑做幂等性保障。
+- 以@StartNode标注的方法作为起始节点。
+- 流程无须预先固定设置，而是可由每个执行节点自由决定下一个节点是谁，或者直接终止。
+- 若执行过程中某个节点出现了异常，则依次执行每个已执行完毕的节点的回滚方法（若配置）。
+- 回滚能力&幂等控制由各节点自行控制。
   

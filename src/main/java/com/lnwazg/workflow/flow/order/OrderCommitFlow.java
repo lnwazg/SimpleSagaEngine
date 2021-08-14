@@ -4,6 +4,7 @@ import com.lnwazg.dto.OrderDTO;
 import com.lnwazg.service.OrderService;
 import com.lnwazg.workflow.engine.AbstractFlow;
 import com.lnwazg.workflow.engine.anno.Node;
+import com.lnwazg.workflow.engine.anno.RollbackNode;
 import com.lnwazg.workflow.engine.anno.StartNode;
 import com.lnwazg.workflow.engine.anno.WorkFlow;
 import com.lnwazg.workflow.engine.exception.BusinessException;
@@ -40,17 +41,23 @@ public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
 
     //修改订单状态
     //发送履约消息
-
     @StartNode
-    @Node
     void createOrder(OrderFlowContext orderFlowContext) throws BusinessException {
         OrderDTO orderDTO = orderService.createOrder();
         orderFlowContext.setOrderDTO(orderDTO);
         orderFlowContext.setNextNodeName("lockInventory");
     }
 
-    @Node
+    @Node(rollbackNode = "lockInventoryRollback")
     void lockInventory(OrderFlowContext orderFlowContext) throws BusinessException {
-        orderFlowContext.setNextNodeName("decreaseInventoryProcessor");
+        logger.info("begin to lockInventory...");
+        logger.info("end to lockInventory");
+        throw new RuntimeException("xxxx");
+    }
+
+    @RollbackNode
+    void lockInventoryRollback(OrderFlowContext orderFlowContext) throws BusinessException {
+        logger.info("begin to lockInventoryRollback...");
+        logger.info("end to lockInventoryRollback");
     }
 }
