@@ -106,3 +106,43 @@ Caused by: java.lang.RuntimeException: xxxx
 - 各执行节点自由灵活控制状态机决定下一个执行节点，也可直接终止。
 - 若某个节点执行出现异常，则框架自动依次执行每个已执行的节点的回滚方法（若配置）。
 - 无须搭建事务控制服务器（例如Seata），正向\逆向流程的幂等控制&回滚能力由各业务节点自行控制。
+
+#### 执行一个完整的下单流程:
+```
+2021-08-14 21:04:41.915  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCommitFlow】开始运行。起始节点：queryGoodsInfo，后续可选节点：[querySaleInfo, createOrder, calcPrice, lockCoupon, sendEvent, lockInventory, generateDistributedId, changeOrderStatus]
+2021-08-14 21:04:41.915  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【queryGoodsInfo】
+2021-08-14 21:04:41.916  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【queryGoodsInfo】，耗时：1ms
+2021-08-14 21:04:41.916  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【querySaleInfo】
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【querySaleInfo】，耗时：0ms
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【calcPrice】
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【calcPrice】，耗时：0ms
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【generateDistributedId】
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【generateDistributedId】，耗时：0ms
+2021-08-14 21:04:41.917  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【createOrder】
+2021-08-14 21:04:41.920  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【createOrder】，耗时：3ms
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【lockInventory】
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : begin to lockInventory...
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : end to lockInventory
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【lockInventory】，耗时：0ms
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【lockCoupon】
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : begin to lockCoupon...
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : end to lockCoupon
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【lockCoupon】，耗时：0ms
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【changeOrderStatus】
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【changeOrderStatus】，耗时：0ms
+2021-08-14 21:04:41.921  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【sendEvent】
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : 当前订单信息：{"orderCommitReqDTO":{"goodsInfoDTOS":[{"skuId":1,"skuName":"Apple/苹果 Mac mini Apple M1","skuPrice":6545},{"skuId":2,"skuName":"苹果 MacBook Air 13.3英寸M1笔记本电脑教育优惠","skuPrice":6660}],"orderId":1000000001,"payAmount":19750,"saleAccountId":1,"saleInfoDTO":{"accountId":1,"accountName":"Apple旗舰店客服专用账号"},"skuIdList":[1,2],"skuQuantityList":[2,1]},"orderDTO":{"createdTime":"2021-08-14T21:04:41.920","lastModifiedTime":"2021-08-14T21:04:41.920","orderId":1000000001,"orderStatus":20,"payAmount":19750,"saleAccountId":1}}
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : begin to send orderCommitted event ...
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.l.workflow.flow.order.OrderCommitFlow  : end to send orderCommitted event!
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【sendEvent】，耗时：75ms
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCommitFlow】运行完毕，总计耗时：81ms
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderPayFlow】开始运行。起始节点：start，后续可选节点：[]
+2021-08-14 21:04:41.996  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【start】
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【start】，耗时：0ms
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderPayFlow】运行完毕，总计耗时：0ms
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderFulfillingFlow】开始运行。起始节点：start，后续可选节点：[]
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 开始执行节点【start】
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 结束执行节点【start】，耗时：0ms
+2021-08-14 21:04:41.997  INFO 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderFulfillingFlow】运行完毕，总计耗时：0ms
+2021-08-14 21:04:41.997 ERROR 12116 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCancelFlow】未设置起始节点，忽略执行！
+```
