@@ -1,5 +1,5 @@
 # SimpleSagaEngine
-极简式saga引擎。
+极简saga事务引擎。
 
 #### Show Me Your Code：
 ```java
@@ -94,8 +94,13 @@ Caused by: java.lang.RuntimeException: xxxx
 2021-08-14 12:35:10.803 ERROR 12008 --- [           main] c.lnwazg.workflow.engine.WorkFlowEngine  : 流程【orderCancelFlow】未设置起始节点，忽略执行！
 ```
 
-#### 框架特色：
+#### 框架基础：
 - 以@StartNode标注的方法作为起始节点。
+- 以@Node标注的方法作为执行节点（可使用rollbackNode属性指定回滚节点）。
+- 以@RollbackNode标注的方法作为回滚节点。
+
+#### 框架特色：
+- 借鉴了saga分布式事务模式状态机引擎的设计思路
 - 流程无须固化，与繁琐的流程设计工具彻底说拜拜：由各执行节点自由决定下一个节点，也可直接终止。
 - 若某个节点执行出现异常，则框架自动依次执行每个已执行的节点的回滚方法（若配置）。
-- 正向\逆向流程的幂等控制&回滚能力由各业务节点自行控制。
+- 无须搭建事务控制服务器（例如Seata），正向\逆向流程的幂等控制&回滚能力由各业务节点自行控制。
