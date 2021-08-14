@@ -1,5 +1,6 @@
 package com.lnwazg.workflow.flow.order;
 
+import com.lnwazg.workflow.engine.AbstractFlow;
 import com.lnwazg.workflow.engine.anno.Node;
 import com.lnwazg.workflow.engine.anno.StartNode;
 import com.lnwazg.workflow.engine.anno.WorkFlow;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @WorkFlow
 @Component
-public class OrderPayFlow {
+public class OrderPayFlow extends AbstractFlow<OrderFlowContext> {
     private Logger logger = LoggerFactory.getLogger(OrderPayFlow.class);
 
     @StartNode

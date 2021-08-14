@@ -2,6 +2,7 @@ package com.lnwazg.workflow.flow.order;
 
 import com.lnwazg.dto.OrderDTO;
 import com.lnwazg.service.OrderService;
+import com.lnwazg.workflow.engine.AbstractFlow;
 import com.lnwazg.workflow.engine.anno.Node;
 import com.lnwazg.workflow.engine.anno.StartNode;
 import com.lnwazg.workflow.engine.anno.WorkFlow;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @WorkFlow
 @Component
-public class OrderCommitFlow {
+public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
     private Logger logger = LoggerFactory.getLogger(OrderCommitFlow.class);
 
     private final OrderService orderService;
@@ -40,11 +41,6 @@ public class OrderCommitFlow {
     //修改订单状态
     //发送履约消息
 
-    //框架记录每个流程的执行耗时
-    //若走到某一步执行失败了，则要依次执行每一个已执行完的流程的回滚流程（若存在rollback流程）
-
-    //订单取消流程
-
     @StartNode
     @Node
     void createOrder(OrderFlowContext orderFlowContext) throws BusinessException {
@@ -57,6 +53,4 @@ public class OrderCommitFlow {
     void lockInventory(OrderFlowContext orderFlowContext) throws BusinessException {
         orderFlowContext.setNextNodeName("decreaseInventoryProcessor");
     }
-
-
 }
