@@ -19,7 +19,7 @@ import java.util.*;
 @Component
 @Slf4j
 public class WorkFlowEngine {
-    public void runWorkFlow(AbstractFlow workFlow, BaseWorkFlowContext workFlowContext) {
+    public void runWorkFlow(AbstractFlow<?> workFlow, BaseWorkFlowContext workFlowContext) {
         String workFlowName = StringUtils.uncapitalize(workFlow.getClass().getSimpleName());//获取工作流类名称的小写名称
         Method[] declaredMethods = workFlow.getClass().getDeclaredMethods();
         //起始节点
@@ -38,7 +38,7 @@ public class WorkFlowEngine {
                 String rollbackNode = node.rollbackNode();
                 if (!StringUtils.isEmpty(rollbackNode)) {
                     node2rollbackMap.put(m.getName(), rollbackNode);
-                    flowNameRollbackNodeMap.put(rollbackNode, Arrays.asList(declaredMethods).stream().filter(x -> {
+                    flowNameRollbackNodeMap.put(rollbackNode, Arrays.stream(declaredMethods).filter(x -> {
                         x.setAccessible(true);
                         //该方法必须被标记为回滚节点
                         return x.isAnnotationPresent(RollbackNode.class) && rollbackNode.equals(x.getName());
@@ -91,15 +91,13 @@ public class WorkFlowEngine {
             log.info("即将执行的回滚节点列表：" + rollbackNames.toString());
             if (!CollectionUtils.isEmpty(rollbackNames)) {
                 //开始回滚
-                rollbackNames.stream().forEach(x -> {
+                rollbackNames.forEach(x -> {
                     log.info("开始执行回滚节点【" + x + "】");
                     Method method = flowNameRollbackNodeMap.get(x);
                     try {
                         method.invoke(workFlow, workFlowContext);
-                    } catch (IllegalAccessException illegalAccessException) {
+                    } catch (IllegalAccessException | InvocationTargetException illegalAccessException) {
                         illegalAccessException.printStackTrace();
-                    } catch (InvocationTargetException invocationTargetException) {
-                        invocationTargetException.printStackTrace();
                     } finally {
                         log.info("结束执行回滚节点【" + x + "】");
                     }
