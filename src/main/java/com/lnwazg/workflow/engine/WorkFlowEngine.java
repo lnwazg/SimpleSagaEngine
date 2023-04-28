@@ -3,8 +3,7 @@ package com.lnwazg.workflow.engine;
 import com.lnwazg.workflow.engine.anno.Node;
 import com.lnwazg.workflow.engine.anno.RollbackNode;
 import com.lnwazg.workflow.engine.anno.StartNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
@@ -18,11 +17,10 @@ import java.util.*;
  * 工作流引擎
  */
 @Component
+@Slf4j
 public class WorkFlowEngine {
-    private Logger logger = LoggerFactory.getLogger(WorkFlowEngine.class);
-
     public void runWorkFlow(AbstractFlow workFlow, BaseWorkFlowContext workFlowContext) {
-        String workFlowName = StringUtils.uncapitalize(workFlow.getClass().getSimpleName());
+        String workFlowName = StringUtils.uncapitalize(workFlow.getClass().getSimpleName());//获取工作流类名称的小写名称
         Method[] declaredMethods = workFlow.getClass().getDeclaredMethods();
         //起始节点
         Method startNodeMethod = null;
@@ -40,27 +38,22 @@ public class WorkFlowEngine {
                 String rollbackNode = node.rollbackNode();
                 if (!StringUtils.isEmpty(rollbackNode)) {
                     node2rollbackMap.put(m.getName(), rollbackNode);
-                    flowNameRollbackNodeMap.put(rollbackNode,
-                            Arrays.asList(declaredMethods)
-                                    .stream()
-                                    .filter(
-                                            x -> {
-                                                x.setAccessible(true);
-                                                //该方法必须被标记为回滚节点
-                                                return x.isAnnotationPresent(RollbackNode.class) && rollbackNode.equals(x.getName());
-                                            }
-                                    ).findFirst().get()
-                    );
+                    flowNameRollbackNodeMap.put(rollbackNode, Arrays.asList(declaredMethods).stream().filter(x -> {
+                        x.setAccessible(true);
+                        //该方法必须被标记为回滚节点
+                        return x.isAnnotationPresent(RollbackNode.class) && rollbackNode.equals(x.getName());
+                    }).findFirst().get());
                 }
             }
         }
         if (startNodeMethod == null) {
-            logger.error("流程【" + workFlowName + "】未设置起始节点，忽略执行！");
+            log.error("流程【" + workFlowName + "】未设置起始节点，忽略执行！");
             return;
         }
+
         StopWatch gw = new StopWatch();
         gw.start();
-        logger.info("流程【" + workFlowName + "】开始运行。起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNameNodeMap.keySet());
+        log.info("流程【" + workFlowName + "】开始运行。起始节点：" + startNodeMethod.getName() + "，后续可选节点：" + flowNameNodeMap.keySet());
         String nextNodeName = null;
         Method nextMethod = null;
         //将起始节点加入
@@ -78,28 +71,28 @@ public class WorkFlowEngine {
                     if (!StringUtils.isEmpty(rollbackNodeName)) {
                         rollbackNames.add(rollbackNodeName);
                     }
-                    logger.info("开始执行节点【" + nextMethod.getName() + "】");
+                    log.info("开始执行节点【" + nextMethod.getName() + "】");
                     //框架记录每个流程的执行耗时
                     StopWatch stopWatch = new StopWatch();
                     stopWatch.start();
                     nextMethod.invoke(workFlow, workFlowContext);
                     stopWatch.stop();
-                    logger.info("结束执行节点【" + nextMethod.getName() + "】，耗时：" + stopWatch.getTotalTimeMillis() + "ms");
+                    log.info("结束执行节点【" + nextMethod.getName() + "】，耗时：" + stopWatch.getTotalTimeMillis() + "ms");
                 } else {
                     //指定了下个节点名称，但实际节点不存在，则直接结束整个流程。
                     break;
                 }
             }
         } catch (Exception e) {
-            logger.error("流程【" + workFlowName + "】执行节点【" + nextMethod.getName() + "】 出现异常！", e);
+            log.error("流程【" + workFlowName + "】执行节点【" + nextMethod.getName() + "】 出现异常！", e);
             //若走到某一步执行失败了，则要依次执行每一个已执行完的流程的回滚流程（若存在rollback流程）
             //将列表倒序。因为回滚时要从后往前回滚。
             Collections.reverse(rollbackNames);
-            logger.info("即将执行的回滚节点列表：" + rollbackNames.toString());
+            log.info("即将执行的回滚节点列表：" + rollbackNames.toString());
             if (!CollectionUtils.isEmpty(rollbackNames)) {
                 //开始回滚
                 rollbackNames.stream().forEach(x -> {
-                    logger.info("开始执行回滚节点【" + x + "】");
+                    log.info("开始执行回滚节点【" + x + "】");
                     Method method = flowNameRollbackNodeMap.get(x);
                     try {
                         method.invoke(workFlow, workFlowContext);
@@ -108,13 +101,13 @@ public class WorkFlowEngine {
                     } catch (InvocationTargetException invocationTargetException) {
                         invocationTargetException.printStackTrace();
                     } finally {
-                        logger.info("结束执行回滚节点【" + x + "】");
+                        log.info("结束执行回滚节点【" + x + "】");
                     }
                 });
             }
         } finally {
             gw.stop();
-            logger.info("流程【" + workFlowName + "】运行完毕，总计耗时：" + gw.getTotalTimeMillis() + "ms");
+            log.info("流程【" + workFlowName + "】运行完毕，总计耗时：" + gw.getTotalTimeMillis() + "ms");
         }
     }
 }

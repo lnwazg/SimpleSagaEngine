@@ -6,8 +6,7 @@ import com.lnwazg.workflow.engine.anno.StartNode;
 import com.lnwazg.workflow.engine.anno.WorkFlow;
 import com.lnwazg.workflow.engine.exception.BusinessException;
 import com.lnwazg.workflow.flow.context.OrderFlowContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,8 +14,8 @@ import org.springframework.stereotype.Component;
  */
 @WorkFlow
 @Component
+@Slf4j
 public class OrderFulfillingFlow extends AbstractFlow<OrderFlowContext> {
-    private Logger logger = LoggerFactory.getLogger(OrderFulfillingFlow.class);
 
     @StartNode
     @Node

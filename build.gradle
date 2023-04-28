@@ -1,31 +1,12 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repositories/jcenter' }
-        maven { url 'https://maven.aliyun.com/repositories/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
-    }
-}
-
 plugins {
-    id 'org.springframework.boot' version '2.3.0.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version '2.7.11'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
-}
-
-allprojects {
-    repositories {
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repositories/jcenter' }
-        maven { url 'https://maven.aliyun.com/repositories/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url "https://jitpack.io" }
-    }
 }
 
 group = 'com.lnwazg'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+sourceCompatibility = '8'
 
 repositories {
     mavenCentral()
@@ -38,7 +19,7 @@ dependencies {
     }
     implementation 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
-    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.78'
+    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.83'
 }
 
 test {

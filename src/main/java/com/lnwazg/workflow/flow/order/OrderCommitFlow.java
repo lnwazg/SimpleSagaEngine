@@ -14,10 +14,10 @@ import com.lnwazg.workflow.engine.anno.StartNode;
 import com.lnwazg.workflow.engine.anno.WorkFlow;
 import com.lnwazg.workflow.engine.exception.BusinessException;
 import com.lnwazg.workflow.flow.context.OrderFlowContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 //完整的下单流程：
@@ -39,20 +39,16 @@ import java.util.List;
  */
 @WorkFlow
 @Component
+@Slf4j
 public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
-    private Logger logger = LoggerFactory.getLogger(OrderCommitFlow.class);
-
-    private final OrderService orderService;
-    private final GoodsService goodsService;
-    private final AccountService accountService;
-    private final PromotionService promotionService;
-
-    public OrderCommitFlow(OrderService orderService, GoodsService goodsService, AccountService accountService, PromotionService promotionService) {
-        this.orderService = orderService;
-        this.goodsService = goodsService;
-        this.accountService = accountService;
-        this.promotionService = promotionService;
-    }
+    @Resource
+    private OrderService orderService;
+    @Resource
+    private GoodsService goodsService;
+    @Resource
+    private AccountService accountService;
+    @Resource
+    private PromotionService promotionService;
 
     @StartNode
     void queryGoodsInfo(OrderFlowContext orderFlowContext) {
@@ -90,30 +86,30 @@ public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
 
     @Node(rollbackNode = "lockInventoryRollback")
     void lockInventory(OrderFlowContext orderFlowContext) throws BusinessException {
-        logger.info("begin to lockInventory...");
-        logger.info("end to lockInventory");
+        log.info("begin to lockInventory...");
+        log.info("end to lockInventory");
         orderFlowContext.setNextNodeName("lockCoupon");
         //        throw new RuntimeException("lockInventory failed test!");
     }
 
     @RollbackNode
     void lockInventoryRollback(OrderFlowContext orderFlowContext) throws BusinessException {
-        logger.info("begin to lockInventoryRollback...");
-        logger.info("end to lockInventoryRollback");
+        log.info("begin to lockInventoryRollback...");
+        log.info("end to lockInventoryRollback");
     }
 
     @Node(rollbackNode = "lockCouponRollback")
     void lockCoupon(OrderFlowContext orderFlowContext) {
-        logger.info("begin to lockCoupon...");
-        logger.info("end to lockCoupon");
+        log.info("begin to lockCoupon...");
+        log.info("end to lockCoupon");
         orderFlowContext.setNextNodeName("changeOrderStatus");
 //        throw new RuntimeException("lockCoupon failed test!");
     }
 
     @RollbackNode
     void lockCouponRollback(OrderFlowContext orderFlowContext) {
-        logger.info("begin to lockCouponRollback...");
-        logger.info("end to lockCouponRollback");
+        log.info("begin to lockCouponRollback...");
+        log.info("end to lockCouponRollback");
     }
 
     @Node
@@ -124,8 +120,8 @@ public class OrderCommitFlow extends AbstractFlow<OrderFlowContext> {
 
     @Node
     void sendEvent(OrderFlowContext orderFlowContext) {
-        logger.info("当前订单信息：" + orderFlowContext);
-        logger.info("begin to send orderCommitted event ...");
-        logger.info("end to send orderCommitted event!");
+        log.info("当前订单信息：" + orderFlowContext);
+        log.info("begin to send orderCommitted event ...");
+        log.info("end to send orderCommitted event!");
     }
 }
