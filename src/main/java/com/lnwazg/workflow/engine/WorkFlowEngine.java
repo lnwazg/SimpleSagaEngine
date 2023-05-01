@@ -36,13 +36,13 @@ public class WorkFlowEngine {
                 flowNameNodeMap.put(m.getName(), m);
                 Node node = m.getAnnotation(Node.class);
                 String rollbackNode = node.rollbackNode();
-                if (!StringUtils.isEmpty(rollbackNode)) {
+                if (StringUtils.hasText(rollbackNode)) {
                     node2rollbackMap.put(m.getName(), rollbackNode);
                     flowNameRollbackNodeMap.put(rollbackNode, Arrays.stream(declaredMethods).filter(x -> {
                         x.setAccessible(true);
                         //该方法必须被标记为回滚节点
                         return x.isAnnotationPresent(RollbackNode.class) && rollbackNode.equals(x.getName());
-                    }).findFirst().get());
+                    }).findFirst().orElseThrow(() -> new RuntimeException("类：" + workFlow.getClass().getName() + "中找不到标记为@RollbackNode的方法:" + rollbackNode)));
                 }
             }
         }
@@ -62,13 +62,13 @@ public class WorkFlowEngine {
         List<String> rollbackNames = new ArrayList<>();
         try {
             //一直执行，直到执行完所有的流程
-            while (!StringUtils.isEmpty(nextNodeName = workFlowContext.getNextNodeName())) {
+            while (StringUtils.hasText(nextNodeName = workFlowContext.getNextNodeName())) {
                 nextMethod = flowNameNodeMap.get(nextNodeName);
                 if (nextMethod != null) {
                     workFlowContext.setNextNodeName(null);
                     //记录相应的回滚node
                     String rollbackNodeName = node2rollbackMap.get(nextNodeName);
-                    if (!StringUtils.isEmpty(rollbackNodeName)) {
+                    if (StringUtils.hasText(rollbackNodeName)) {
                         rollbackNames.add(rollbackNodeName);
                     }
                     log.info("开始执行节点【" + nextMethod.getName() + "】");
@@ -84,7 +84,7 @@ public class WorkFlowEngine {
                 }
             }
         } catch (Exception e) {
-            log.error("流程【" + workFlowName + "】执行节点【" + nextMethod.getName() + "】 出现异常！", e);
+            log.error("流程【" + workFlowName + "】执行节点【" + nextNodeName + "】 出现异常！", e);
             //若走到某一步执行失败了，则要依次执行每一个已执行完的流程的回滚流程（若存在rollback流程）
             //将列表倒序。因为回滚时要从后往前回滚。
             Collections.reverse(rollbackNames);
